@@ -1,46 +1,37 @@
-// src/app/page.tsx
-import UploadZone from '@/components/UploadZone';
+'use client';
+import { useState } from 'react';
+import * as pdfjs from 'pdfjs-dist';
+import { useEditorStore } from '@/store/useEditorStore';
+import PdfPage from '@/components/editor/PdfPage';
 
-export default function LandingPage() {
+export default function EditorPage() {
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
+  const { setPages } = useEditorStore();
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const data = await file.arrayBuffer();
+    const loadingTask = pdfjs.getDocument({ data });
+    const pdf = await loadingTask.promise;
+    
+    setPdfDoc(pdf);
+    setPages(pdf.numPages);
+  };
+
   return (
-    <main className="min-h-screen bg-[#0F1117] flex flex-col items-center justify-center p-8">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-600/10 blur-[120px] pointer-events-none" />
-
-      {/* Hero Section */}
-      <div className="text-center mb-16 space-y-4 relative z-10">
-        <div className="inline-block px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full mb-4">
-          <span className="text-blue-400 text-xs font-black uppercase tracking-[0.2em]">Next-Gen Question Extractor</span>
+    <main className="min-h-screen bg-slate-100 p-10">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white p-6 rounded-xl shadow-md mb-10 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-slate-800">문항 추출 좌표 검증</h1>
+          <input type="file" onChange={handleFile} accept="application/pdf" className="text-sm" />
         </div>
-        <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter italic">
-          TEST-GEN <span className="text-blue-600">PRO</span>
-        </h1>
-        <p className="text-slate-400 text-lg md:text-xl font-medium max-w-xl mx-auto">
-          AI의 모호함을 넘어서는 완벽한 레이아웃 템플릿 엔진.<br />
-          단 4번의 설정으로 시험지 전체를 정밀하게 추출합니다.
-        </p>
+
+        {pdfDoc && [0, 1, 5].map((idx) => (
+          <PdfPage key={idx} pageIndex={idx} pdfDoc={pdfDoc} />
+        ))}
       </div>
-
-      {/* Upload Component */}
-      <div className="w-full flex justify-center relative z-10">
-        <UploadZone />
-      </div>
-
-      {/* Footer / Stats */}
-      <footer className="mt-24 flex gap-12 text-slate-600">
-        <div className="text-center">
-          <div className="text-white font-black text-xl">100%</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest">Accuracy</div>
-        </div>
-        <div className="text-center">
-          <div className="text-white font-black text-xl">30s</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest">Processing</div>
-        </div>
-        <div className="text-center">
-          <div className="text-white font-black text-xl">Auto</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest">Formatting</div>
-        </div>
-      </footer>
     </main>
   );
 }
