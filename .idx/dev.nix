@@ -9,6 +9,14 @@
     pkgs.yarn
     pkgs.nodePackages.pnpm
     pkgs.bun
+    pkgs.pkg-config
+    pkgs.cairo
+    pkgs.pango
+    pkgs.libuuid
+    pkgs.libpng
+    pkgs.libjpeg
+    pkgs.giflib
+    pkgs.librsvg
   ];
   # Sets environment variables in the workspace
   env = {};
