@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:crop": "tsx -r dotenv/config local-crop.ts dotenv_config_path=.env.local"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1002.0",
+    "@neondatabase/serverless": "^1.0.2",
+    "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
@@ -17,6 +20,7 @@
     "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "server-only": "^0.0.1",
     "sharp": "^0.34.5",
     "tesseract.js": "^7.0.0",
     "zustand": "^5.0.11"

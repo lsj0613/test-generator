@@ -1,15 +1,19 @@
-// src/modules/question-extractor/services/pdf.service.ts
 import sharp from 'sharp';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
-import { createCanvas } from 'canvas';
-import { SERVER_ONLY_CONFIG } from '@/lib/constants';
+import { createCanvas, Canvas, CanvasRenderingContext2D, ImageData } from 'canvas';
+import { SERVER_ONLY_CONFIG, PDF_CONFIG } from '@/lib/constants';
 import { CropRect } from '../types';
+import { PDFPageProxy, PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 
+// Worker 설정 (Node.js 환경 대응)
 const pdfWorker = require('pdfjs-dist/legacy/build/pdf.worker.js');
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export const PdfProcessor = {
-  async loadDocument(buffer: Uint8Array) {
+  /**
+   * PDF 문서를 로드하여 Proxy 객체 반환
+   */
+  async loadDocument(buffer: Uint8Array): Promise<PDFDocumentProxy> {
     const pdfDoc = await pdfjsLib.getDocument({
       data: buffer,
       disableFontFace: true,
@@ -18,20 +22,25 @@ export const PdfProcessor = {
     return pdfDoc;
   },
 
-  async crop(page: any, r: CropRect): Promise<Buffer> {
+  /**
+   * PDF 페이지의 특정 영역(r)을 픽셀 단위로 분석하여 정밀 크롭
+   */
+  async crop(page: PDFPageProxy, r: CropRect): Promise<Buffer> {
     const scale = SERVER_ONLY_CONFIG.CROP_RENDER_SCALE;
     const viewport = page.getViewport({ scale });
-    const canvas: any = createCanvas(viewport.width, viewport.height);
-    const context = canvas.getContext('2d');
+    
+    // canvas 라이브러리의 구체적 타입 적용
+    const canvas: Canvas = createCanvas(viewport.width, viewport.height);
+    const context: CanvasRenderingContext2D = canvas.getContext('2d');
     
     // PDF 페이지를 캔버스에 렌더링
-    await page.render({ canvasContext: context, viewport }).promise;
+    await page.render({ canvasContext: context as any, viewport }).promise;
 
     // 1. Analyzer가 계산한 이론적(Theoretical) 블록 영역 좌표 계산
-    const blockLeft = Math.round((r.x / 1000) * viewport.width);
-    const blockTop = Math.round((r.y / 1000) * viewport.height);
-    const blockWidth = Math.round((r.w / 1000) * viewport.width);
-    const blockHeight = Math.round((r.h / 1000) * viewport.height);
+    const blockLeft = Math.round((r.x / PDF_CONFIG.COORDINATE_MAX) * viewport.width);
+    const blockTop = Math.round((r.y / PDF_CONFIG.COORDINATE_MAX) * viewport.height);
+    const blockWidth = Math.round((r.w / PDF_CONFIG.COORDINATE_MAX) * viewport.width);
+    const blockHeight = Math.round((r.h / PDF_CONFIG.COORDINATE_MAX) * viewport.height);
 
     // 캔버스 범위를 벗어나지 않도록 안전 영역 확보
     const safeLeft = Math.max(0, blockLeft);
@@ -40,8 +49,7 @@ export const PdfProcessor = {
     const safeHeight = Math.min(blockHeight, viewport.height - safeTop);
 
     // 2. 🎯 Canvas 픽셀 데이터 직접 분석 (Pixel Scanning)
-    // 해당 블록의 픽셀 배열을 가져와 콘텐츠가 존재하는 가장 타이트한 경계를 찾습니다.
-    const imageData = context.getImageData(safeLeft, safeTop, safeWidth, safeHeight);
+    const imageData: ImageData = context.getImageData(safeLeft, safeTop, safeWidth, safeHeight);
     const data = imageData.data;
     
     let minX = safeWidth, minY = safeHeight, maxX = 0, maxY = 0;
@@ -56,7 +64,7 @@ export const PdfProcessor = {
         const bVal = data[i + 2];
         const aVal = data[i + 3];
 
-        // 알파 채널이 존재하고, RGB 중 하나라도 240 미만이면 콘텐츠로 간주 (임계값 240)
+        // RGB 중 하나라도 240 미만이면 콘텐츠로 간주 (기존 임계값 유지)
         if (aVal > 0 && (rVal < 240 || gVal < 240 || bVal < 240)) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
@@ -78,8 +86,7 @@ export const PdfProcessor = {
     const contentWidth = (maxX - minX) + 1;
     const contentHeight = (maxY - minY) + 1;
 
-    // 4. 🎯 정밀 추출 및 절대 패딩(40px) 추가
-    // 픽셀 스캔으로 얻은 정확한 경계만을 잘라낸 후, 사방에 40px을 연장합니다.
+    // 4. 🎯 정밀 추출 (Sharp 활용)
     const finalBuffer = await sharp(canvas.toBuffer('image/png'))
       .extract({
         left: contentLeft,
@@ -87,7 +94,6 @@ export const PdfProcessor = {
         width: contentWidth,
         height: contentHeight
       })
-
       .png()
       .toBuffer();
 

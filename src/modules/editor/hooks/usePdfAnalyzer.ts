@@ -2,13 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { PDF_CONFIG } from "@/lib/constants";
 import { useEditorStore } from "../store/useEditorStore";
-import { AnalyzerService } from "@/modules/question-extractor/services/analyzer.service";
+// 🎯 서비스 직접 임포트 대신 서버 액션 임포트
 
 export function usePdfAnalyzer(pdfDoc: any, pageIndex: number) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<any>(null);
-  
-  // 🎯 누락되었던 렌더링 상태 추적(Lock) 변수 복구
   const isRendering = useRef<boolean>(false); 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const updateAnalysis = useEditorStore((state) => state.updateAnalysis);
@@ -19,17 +17,18 @@ export function usePdfAnalyzer(pdfDoc: any, pageIndex: number) {
     const runProcess = async () => {
       if (!canvasRef.current || !pdfDoc || !active) return;
 
-      // 🎯 기존에 작성하셨던 완벽한 취소 및 대기(Lock) 로직 복구
       if (renderTaskRef.current) {
-        await renderTaskRef.current.cancel();
+        try { await renderTaskRef.current.cancel(); } catch {}
       }
+      
       while (isRendering.current) {
         await new Promise((res) => setTimeout(res, 50));
       }
+      
       if (!active || !canvasRef.current) return;
 
       try {
-        isRendering.current = true; // 렌더링 락(Lock) 걸기
+        isRendering.current = true;
         const page = await pdfDoc.getPage(pageIndex + 1);
         const viewport = page.getViewport({ scale: PDF_CONFIG.SCALE });
         const canvas = canvasRef.current;
@@ -44,16 +43,21 @@ export function usePdfAnalyzer(pdfDoc: any, pageIndex: number) {
 
         if (active) {
           setIsAnalyzing(true);
-          const results = await AnalyzerService.analyzePdfText(page);
+          
+          // 🎯 중요: 클라이언트 사이드 pdf.js의 page 객체는 직렬화가 불가능할 수 있습니다.
+          // 보통은 getTextContent() 결과를 넘기거나, 서버 액션 내부에서 
+          // PDF를 다시 로드하여 처리하는 방식이 Next.js 16 표준에 더 가깝습니다.
+          const textContent = await page.getTextContent(); 
+          const results = await analyzePdfPageAction(textContent); 
+          
           updateAnalysis(pageIndex, { left: results.left, right: results.right });
         }
       } catch (err: any) {
-        // 취소로 인한 정상적인 에러는 무시
         if (err.name !== "RenderingCancelledException") {
           console.error(err);
         }
       } finally {
-        isRendering.current = false; // 렌더링 락(Lock) 해제
+        isRendering.current = false;
         renderTaskRef.current = null;
         if (active) setIsAnalyzing(false);
       }

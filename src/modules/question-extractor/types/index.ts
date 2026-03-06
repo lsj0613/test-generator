@@ -38,3 +38,31 @@ export interface PdfTextItem {
   export interface Coordinate {
     y: number;
   }
+
+
+  export interface ExtractedQuestion {
+    qNo: number;
+    category: "Common" | "Calculus" | "Statistics";
+    examDate: string;
+    rect: {
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+    };
+  }
+  
+  export interface AnalysisResult {
+    pageCategory: "Common" | "Calculus" | "Statistics";
+    left: ColumnData;
+    right: ColumnData;
+    allTextItems: any[];
+  }
+  
+  export interface ColumnData {
+    column: "left" | "right";
+    questionCount: 1 | 2 | "Error";
+    questions: any[];
+    points: any[];
+    hasTypeKeyword: boolean;
+  }

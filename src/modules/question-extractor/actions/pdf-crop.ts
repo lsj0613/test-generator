@@ -1,72 +1,25 @@
-// src/app/actions/pdf-action.ts
+// src/modules/question-extractor/actions.ts
 "use server";
 
+import { ExtractorTaskService } from "../services/extractor-task";
 
-import { PDF_CONFIG } from "@/lib/constants";
-import { R2Service } from "@/modules/storage/CloudflareR2/services/r2.service";
-import { PdfProcessor } from "../services/pdf.service";
-import { AnalyzerService } from "../services/analyzer.service";
 
 /**
- * @param testId '202507C' (끝자리 문자로 카테고리 자동 판단)
- * @param coords UI에서 조정된 좌표 객체
+ * 클라이언트에서 호출하는 서버 액션
+ * @param paperId '202507C'
  */
-export async function processAndUploadToR2(
-  testId: string,
-  coords: any
-) {
+export async function processAndUploadToR2Action(paperId: string) {
   try {
-    // 🎯 서비스 내부 로직을 통해 카테고리별 경로에서 PDF 다운로드
-    const pdfBuffer = await R2Service.downloadPdf(testId);
-    const pdfDoc = await PdfProcessor.loadDocument(pdfBuffer);
-
-    for (let i = 1; i <= pdfDoc.numPages; i++) {
-      const page = await pdfDoc.getPage(i);
-      const { height, width } = page.getViewport({ scale: 1.0 });
-
-      // 1. 텍스트 분석 (문항 번호 및 배점 추출)
-      const analysis = await AnalyzerService.analyzePdfText(page);
-
-      // 2. 페이지 특성 판단 (상단 150 영역 내 '학년도' 등 확인)
-      const isSpecialPage = analysis.allTextItems.some(
-        (item: any) =>
-          (1 - item.transform[5] / height) * PDF_CONFIG.COORDINATE_MAX < 150 &&
-          (item.str.includes("학년도") || item.str.includes("문제지"))
-      );
-
-      for (const col of ["left", "right"] as const) {
-        // 3. 해당 단의 텍스트만 모아서 특수 타입(5지/단답) 확인
-        const colText = analysis.allTextItems
-          .filter((item: any) => {
-            const rx = (item.transform[4] / width) * PDF_CONFIG.COORDINATE_MAX;
-            return col === "left" ? rx < 500 : rx >= 500;
-          })
-          .map((item: any) => item.str)
-          .join("")
-          .replace(/\s+/g, "");
-
-        const hasSpecialType =
-          colText.includes("5지선다형") || colText.includes("단답형");
-
-        // 4. 좌표 계산
-        const rects = AnalyzerService.calculateRects(
-          col,
-          analysis,
-          isSpecialPage,
-          hasSpecialType,
-          coords
-        );
-
-        // 5. 자르기 및 업로드 (파일명 규칙 자동 적용)
-        for (const item of rects) {
-          const croppedBuffer = await PdfProcessor.crop(page, item.rect);
-          await R2Service.uploadImage(testId, item.qNo, croppedBuffer);
-        }
-      }
-    }
+    // 비즈니스 로직 서비스를 호출
+    await ExtractorTaskService.processPaper(paperId);
+    
     return { success: true };
   } catch (error: any) {
     console.error("❌ 처리 실패:", error);
-    return { success: false, error: error.message };
+    // 에러 메시지만 추출하여 안전하게 반환
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "알 수 없는 에러가 발생했습니다." 
+    };
   }
 }
