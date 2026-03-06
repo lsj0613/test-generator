@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { uploadRawPdfToR2 } from "@/modules/storage/actions/upload-pdf";
+import { uploadRawPdfToR2 } from "@/modules/storage/CloudflareR2/actions/upload-pdf";
 
 export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);

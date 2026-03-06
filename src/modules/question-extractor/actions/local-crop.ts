@@ -4,7 +4,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { createCanvas } from "canvas"; // 🎯 픽셀 추출용 캔버스 임포트
-import { R2Service } from "@/modules/storage/services/r2.service";
+import { R2Service } from "@/modules/storage/CloudflareR2/services/r2.service";
 import { PdfProcessor } from "@/modules/question-extractor/services/pdf.service";
 import { AnalyzerService } from "@/modules/question-extractor/services/analyzer.service";
 import { PDF_CONFIG } from "@/lib/constants";

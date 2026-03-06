@@ -3,7 +3,7 @@
 
 
 import { PDF_CONFIG } from "@/lib/constants";
-import { R2Service } from "@/modules/storage/services/r2.service";
+import { R2Service } from "@/modules/storage/CloudflareR2/services/r2.service";
 import { PdfProcessor } from "../services/pdf.service";
 import { AnalyzerService } from "../services/analyzer.service";
 
