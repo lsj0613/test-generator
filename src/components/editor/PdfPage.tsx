@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
 import { useEditorStore } from "@/store/useEditorStore";
 import { PDF_CONFIG, BOUNDS, COLORS } from "@/lib/constants";
+import { AnalyzerService } from "@/features/extract_question/services/analyzer.service"; // 추가
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
@@ -55,13 +56,16 @@ export default function PdfPage({
         // 렌더링 완료 후 자동 분석
         if (active) {
           setIsAnalyzing(true);
-          const results = await analyzePdfText(page, {
-            LEFT_START: BOUNDS.LEFT_START,
-            LEFT_END: BOUNDS.LEFT_END,
-            RIGHT_START: BOUNDS.RIGHT_START,
-            RIGHT_END: BOUNDS.RIGHT_END,
+
+          // 🎯 AnalyzerService로부터 타입이 완벽히 정의된 결과 수신
+          const results = await AnalyzerService.analyzePdfText(page);
+
+          // 🎯 결과 객체를 있는 그대로 updateAnalysis에 전달
+          updateAnalysis(pageIndex, {
+            left: results.left,
+            right: results.right,
           });
-          updateAnalysis(pageIndex, results);
+
           setIsAnalyzing(false);
         }
       } catch (err: any) {
@@ -310,7 +314,3 @@ function ResultCard({ label, data, theme, loading }: any) {
     </div>
   );
 }
-function analyzePdfText(page: any, arg1: { LEFT_START: number; LEFT_END: number; RIGHT_START: number; RIGHT_END: number; }) {
-  throw new Error("Function not implemented.");
-}
-
