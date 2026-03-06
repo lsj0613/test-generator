@@ -1,18 +1,13 @@
+// src/modules/editor/store/useEditorStore.ts
 import { create } from "zustand";
 import { PDF_CONFIG } from "@/lib/constants";
-
-export interface AnalysisResult {
-  column: "left" | "right";
-  questionCount: 1 | 2 | "Error";
-  questions: { no: number; y: number }[];
-  points: { val: number; y: number }[];
-}
+import { ColumnAnalysis, Coordinate } from "@/modules/question-extractor/types";
 
 interface PageData {
-  coordinates: { y: number }[];
+  coordinates: Coordinate[];
   analysis?: {
-    left: AnalysisResult;
-    right: AnalysisResult;
+    left: ColumnAnalysis;
+    right: ColumnAnalysis;
   };
 }
 
@@ -22,7 +17,7 @@ interface EditorState {
   updateCoordinate: (pageIndex: number, coordIndex: number, y: number) => void;
   updateAnalysis: (
     pageIndex: number,
-    data: { left: AnalysisResult; right: AnalysisResult }
+    data: { left: ColumnAnalysis; right: ColumnAnalysis }
   ) => void;
 }
 
@@ -31,13 +26,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   setPages: (count) =>
     set({
       pages: Array.from({ length: count }, (_, i) => ({
-        // 초기 좌표값을 PDF_CONFIG.DEFAULT_Y_COORD(190)으로 설정
         coordinates:
           i === 0
-            ? [
-                { y: PDF_CONFIG.DEFAULT_Y_COORD },
-                { y: PDF_CONFIG.DEFAULT_Y_COORD },
-              ]
+            ? [{ y: PDF_CONFIG.DEFAULT_Y_COORD }, { y: PDF_CONFIG.DEFAULT_Y_COORD }]
             : i === 1 || i === 5
             ? [{ y: PDF_CONFIG.DEFAULT_Y_COORD }]
             : [],

@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import * as pdfjs from 'pdfjs-dist';
-import { useEditorStore } from '@/store/useEditorStore';
-import PdfPage from '@/components/editor/PdfPage';
+import { useEditorStore } from '@/modules/editor/store/useEditorStore';
+import PdfPage from '@/modules/editor/components/PdfPage';
+
 
 export default function EditorPage() {
   const [pdfDoc, setPdfDoc] = useState<any>(null);

@@ -1,7 +1,8 @@
 // src/app/test/page.tsx
 "use client";
 
-import { processAndUploadToR2 } from "@/features/extract_question/actions/pdf-crop";
+import { processAndUploadToR2 } from "@/modules/question-extractor/actions/pdf-crop";
+
 
 export default function TestPage() {
   const handleTest = async () => {

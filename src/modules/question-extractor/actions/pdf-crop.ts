@@ -1,10 +1,11 @@
 // src/app/actions/pdf-action.ts
 "use server";
 
-import { R2Service } from "@/features/extract_question/services/r2.service";
-import { PdfProcessor } from "@/features/extract_question/services/pdf.service";
-import { AnalyzerService } from "@/features/extract_question/services/analyzer.service";
+
 import { PDF_CONFIG } from "@/lib/constants";
+import { R2Service } from "@/modules/storage/services/r2.service";
+import { PdfProcessor } from "../services/pdf.service";
+import { AnalyzerService } from "../services/analyzer.service";
 
 /**
  * @param testId '202507C' (끝자리 문자로 카테고리 자동 판단)
