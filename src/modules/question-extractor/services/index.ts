@@ -1,19 +1,17 @@
-
-import { PdfTextAnalyzer } from "./text-analyzer";
 import { PdfLayoutCalculator } from "./layout-calculator";
-import { ExtractedQuestion, AnalysisResult } from "../types";
+import { ExtractedQuestion, PageAnalysisResult,  } from "../types";
+import { PdfPageAnalyzer } from "./page-analyzer";
 
 export const AnalyzerService = {
-  analyzePdfText: (page: any): Promise<AnalysisResult> => 
-    PdfTextAnalyzer.analyze(page),
-    
-  calculateRects: (
-    col: "left" | "right", 
-    analysis: AnalysisResult, 
-    _pageIndex: number, 
-    examDate: string, 
-    pixelContext: any
-  ): ExtractedQuestion[] => 
-    PdfLayoutCalculator.calculate(col, analysis, examDate, pixelContext)
-};
+  analyzePdfText: (page: any): Promise<PageAnalysisResult> =>
+    PdfPageAnalyzer.analyze(page),
 
+  calculateRects: (
+    col: "left" | "right",
+    analysis: PageAnalysisResult,
+    _pageIndex: number,
+    examDate: string,
+    pixelContext: any
+  ): ExtractedQuestion[] =>
+    PdfLayoutCalculator.calculate(col, analysis, examDate, pixelContext),
+};

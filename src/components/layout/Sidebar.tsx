@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { name: "대시보드", href: "/" },
   { name: "PDF 업로드 (신규)", href: "/upload" },
-  { name: "시험지 에디터", href: "/test" },
 ];
 
 export function Sidebar() {

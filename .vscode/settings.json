@@ -1,0 +1,24 @@
+{
+  "http.proxySupport": "off",
+  "terminal.integrated.localEchoLatencyThreshold": -1,
+  "terminal.integrated.localEchoEnabled": "off",
+  "terminal.integrated.fontSize": 13,
+  "workbench.startupEditor": "none",
+  "editor.fontFamily": "JetBrains Mono, Menlo, Monaco, Courier New, monospace",
+  "editor.fontWeight": "normal",
+  "editor.fontSize": 13,
+  "editor.lineHeight": 1.5,
+  "editor.letterSpacing": 0,
+  "debug.console.fontSize": 13,
+  "window.commandCenter": false,
+  "workbench.preferredDarkColorTheme": "Google Dark",
+  "workbench.preferredLightColorTheme": "Google Light",
+  "workbench.iconTheme": "monospace",
+  "window.autoDetectColorScheme": true,
+  "workbench.layoutControl.enabled": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "extensions.webWorker": false
+}
+  

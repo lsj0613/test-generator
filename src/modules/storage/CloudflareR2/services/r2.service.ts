@@ -60,15 +60,15 @@ export const R2Service = {
     paperId: string, 
     qNo: number, 
     buffer: Buffer | Uint8Array, 
-    category: "Common" | "Calculus" | "Statistics" | string
+    category: "공통" | "미적분" | "확률과통계" | string
   ): Promise<string> {
     const yearMonth = paperId.substring(0, 6);
     
     // 접미사 결정 로직
     const suffixMap: Record<string, string> = {
-      "Common": "D",
-      "Calculus": "C",
-      "Statistics": "S",
+      "공통": "D",
+      "미적분": "C",
+      "확률과통계": "S",
     };
     const suffix = suffixMap[category] || "N";
     

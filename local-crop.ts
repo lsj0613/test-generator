@@ -17,7 +17,7 @@ console.log("- Secret Key Loaded:", !!process.env.R2_SECRET_ACCESS_KEY);
 // 2. 테스트 설정
 const TEST_CONFIG = {
   PAPER_ID: "202507C",
-  CATEGORY: "Calculus",
+  CATEGORY: "미적분",
   PAGE_RANGE: [1, 2,4, 6,9, 12], 
   VERBOSE: true
 };
@@ -29,9 +29,9 @@ function getLocalPath(paperId: string, qNo: number, category: string, extractedP
   const yearMonth = paperId.substring(0, 6);
   let suffix: string;
   switch (category) {
-    case "Common": suffix = "D"; break;
-    case "Calculus": suffix = "C"; break;
-    case "Statistics": suffix = "S"; break;
+    case "공통": suffix = "D"; break;
+    case "미적분": suffix = "C"; break;
+    case "확률과통계": suffix = "S"; break;
     default: suffix = "N"; break;
   }
   const fileName = `${yearMonth}${qNo.toString().padStart(2, "0")}${suffix}.png`;

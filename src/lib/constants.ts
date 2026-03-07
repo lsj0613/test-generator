@@ -9,19 +9,19 @@ export const PDF_CONFIG = {
 };
 
 /**
- * 레이아웃 및 컬럼 좌표 설정 (B안 반영: 85 ~ 915)
+ * 레이아웃 및 컬럼 좌표 설정
  */
 export const PDF_LAYOUT_CONFIG = {
   COLUMNS: {
     left: {
       id: "left" as const,
-      xStart: 85, // B안: 여백을 더 넓게 확보 (85)
+      xStart: 85, //
       xEnd: 495,
     },
     right: {
       id: "right" as const,
       xStart: 505,
-      xEnd: 915, // B안: 여백을 더 넓게 확보 (915)
+      xEnd: 915, // 
     },
   },
 };

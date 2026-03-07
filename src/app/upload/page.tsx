@@ -31,12 +31,7 @@ export default function UploadPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-2">카테고리 (과목)</label>
-          <select name="category" className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-            <option value="Calculus">미적분 (Calculus)</option>
-            <option value="Statistics">확률과 통계 (Statistics)</option>
-            <option value="Geometry">기하 (Geometry)</option>
-            <option value="Common">공통 (Common)</option>
-          </select>
+
         </div>
 
         <div>

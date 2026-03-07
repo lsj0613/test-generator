@@ -28,7 +28,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "crop-test.js"  ],
+    "**/*.mts",
+    "crop-test.js",
+    "src/modules/storage/neon/schema.ts"
+  ],
   "exclude": ["node_modules"]
 }

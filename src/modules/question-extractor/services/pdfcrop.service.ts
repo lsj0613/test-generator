@@ -4,10 +4,11 @@ import { createCanvas, Canvas, CanvasRenderingContext2D, ImageData } from 'canva
 import { SERVER_ONLY_CONFIG, PDF_CONFIG } from '@/lib/constants';
 import { CropRect } from '../types';
 import { PDFPageProxy, PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
+import pdfWorker from "pdfjs-dist/legacy/build/pdf.worker.js";
 
-// Worker 설정 (Node.js 환경 대응)
-const pdfWorker = require('pdfjs-dist/legacy/build/pdf.worker.js');
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// Worker 설정 (Node.js 환경 대응)
+//const pdfWorker = require('pdfjs-dist/legacy/build/pdf.worker.js');
 
 export const PdfProcessor = {
   /**

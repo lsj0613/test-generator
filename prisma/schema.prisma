@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // 이 줄을 추가하세요
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  name             String?
+  role             String            @default("USER") // ADMIN, USER 구분
+  createdAt        DateTime          @default(now()) @map("created_at")
+  
+  testSessions     TestSession[]
+  questionAttempts QuestionAttempt[]
+
+  @@map("users")
+}
+
+model RawPaper {
+  id              String     @id @default(uuid())
+  grade           Int
+  year            Int
+  month           Int
+  source          String
+  subject         String
+  originalFileUrl String?    @map("original_file_url")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  
+  questions       Question[]
+
+  @@index([year, month, grade])
+  @@map("raw_papers")
+}
+
+model Question {
+  id                     String              @id @default(uuid())
+  rawPaperId             String              @map("raw_paper_id")
+  subject                String?
+  difficulty             Int?                // 1~10
+  
+  type                   String              @default("MULTIPLE_CHOICE") // MULTIPLE_CHOICE, SHORT_ANSWER
+  answer                 String              // 정답
+  score                  Int                 @default(3) // 배점
+  
+  imageUrl               String              @map("image_url")
+  width                  Int?
+  height                 Int?
+  
+  metadata               Json
+  createdAt              DateTime            @default(now()) @map("created_at")
+
+  rawPaper               RawPaper            @relation(fields: [rawPaperId], references: [id], onDelete: Cascade)
+  solution               Solution?
+  testPapers             TestPaperQuestion[]
+  attempts               QuestionAttempt[]
+
+  @@index([subject, difficulty])
+  @@map("questions")
+}
+
+model Solution {
+  id         String   @id @default(uuid())
+  questionId String   @unique @map("question_id")
+  content    String?
+  imageUrl   String?  @map("image_url")
+  
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("solutions")
+}
+
+model TestPaper {
+  id          String              @id @default(uuid())
+  title       String
+  description String?
+  timeLimit   Int?                // 시험 제한 시간 (초 단위, 예: 6000 = 100분)
+  isPublic    Boolean             @default(false) // 공유 여부
+  createdAt   DateTime            @default(now()) @map("created_at")
+  
+  questions   TestPaperQuestion[]
+  sessions    TestSession[]
+
+  @@map("test_papers")
+}
+
+model TestPaperQuestion {
+  id          String    @id @default(uuid())
+  testPaperId String    @map("test_paper_id")
+  questionId  String    @map("question_id")
+  order       Int
+
+  testPaper   TestPaper @relation(fields: [testPaperId], references: [id], onDelete: Cascade)
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([testPaperId, questionId])
+  @@map("test_paper_questions")
+}
+
+/// [TestSession] 시험지 응시 단위 (체스의 'Game'에 해당)
+model TestSession {
+  id             String            @id @default(uuid())
+  userId         String            @map("user_id")
+  testPaperId    String            @map("test_paper_id")
+  
+  totalScore     Int?              @map("total_score")
+  totalTimeTaken Int?              @map("total_time_taken") // 총 응시 시간 (초 단위)
+  completedAt    DateTime?         @map("completed_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testPaper      TestPaper         @relation(fields: [testPaperId], references: [id], onDelete: Cascade)
+  attempts       QuestionAttempt[]
+
+  @@index([userId, testPaperId])
+  @@map("test_sessions")
+}
+
+/// [QuestionAttempt] 문항 단위의 풀이 (체스의 'Move'에 해당)
+model QuestionAttempt {
+  id            String       @id @default(uuid())
+  userId        String       @map("user_id")
+  questionId    String       @map("question_id")
+  testSessionId String?      @map("test_session_id") // 세션에 속한 경우 기록
+  
+  attemptNumber Int          @map("attempt_number")
+  userAnswer    String       @map("user_answer")
+  isCorrect     Boolean      @map("is_correct")
+  timeTaken     Int?         @map("time_taken")      // 이 문항에만 쓴 시간
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question      Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  testSession   TestSession? @relation(fields: [testSessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, questionId])
+  @@map("question_attempts")
+}

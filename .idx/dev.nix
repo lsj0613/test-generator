@@ -16,14 +16,23 @@
     pkgs.libpng
     pkgs.libjpeg
     pkgs.giflib
+    pkgs.postgresql_15
     pkgs.librsvg
+    pkgs.openssl
   ];
+  services.postgres = {
+    enable = true;
+    # (선택) 특정 포트를 지정하고 싶다면 설정 가능하지만 기본은 5432입니다.
+  };
   # Sets environment variables in the workspace
   env = {};
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
-    extensions = [
-      # "vscodevim.vim"
+  extensions = [
+      "esbenp.prettier-vscode"
+      "bradlc.vscode-tailwindcss"
+      "PKief.material-icon-theme"
+      "ritwickdey.LiveServer"
       "google.gemini-cli-vscode-ide-companion"
     ];
     workspace = {
